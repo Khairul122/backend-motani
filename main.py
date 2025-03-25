@@ -15,6 +15,6 @@ app.add_middleware(
 
 @app.get("/")
 def root():
-    return {"message": "SPK WSM"}
+    return {"message": "Backend Aplikasi Motani"}
 
 app.include_router(LoginController, prefix="/controller")
