@@ -1,9 +1,10 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from Api.Route import router as api_router
+from conn import db_config
 import mysql.connector
 from mysql.connector import Error
-from Controller.LoginController import router as LoginController
-from conn import db_config  # Impor kredensial dari conn.py
+from fastapi.exceptions import HTTPException
 
 app = FastAPI()
 
@@ -19,11 +20,9 @@ app.add_middleware(
 def root():
     return {"message": "Backend Aplikasi Motani"}
 
-# Route untuk cek koneksi ke database
 @app.get("/cek")
 def cek_koneksi():
     try:
-        # Menggunakan kredensial yang diimpor dari conn.py
         connection = mysql.connector.connect(
             host=db_config["host"],
             user=db_config["user"],
@@ -38,5 +37,4 @@ def cek_koneksi():
         if connection.is_connected():
             connection.close()
 
-# Menambahkan route LoginController
-app.include_router(LoginController, prefix="/controller")
+app.include_router(api_router, prefix="/api")

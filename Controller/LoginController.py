@@ -1,7 +1,7 @@
-# api/LoginController.py
+# Controller/LoginController.py
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
-from Model.LoginModel import LoginModel, User
+from Model.LoginModel import User, LoginModel
 from conn import get_db
 
 router = APIRouter()

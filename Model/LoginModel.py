@@ -1,13 +1,11 @@
-# api/LoginModel.py
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
-from conn import engine, SessionLocal
+from conn import engine
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 
-# Pastikan struktur tabel `tb_administrator` di MySQL memiliki kolom-kolom berikut:
 class UserInDB(Base):
     __tablename__ = 'tb_administrator'
 
@@ -16,7 +14,6 @@ class UserInDB(Base):
     password = Column(String(100))
     nama = Column(String(100))
 
-# Pydantic model untuk request data
 class User(BaseModel):
     username: str
     password: str
