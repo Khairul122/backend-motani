@@ -1,4 +1,3 @@
-# Model/LoginModel.py
 from pydantic import BaseModel
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import Session
