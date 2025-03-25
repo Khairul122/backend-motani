@@ -10,11 +10,9 @@ router = APIRouter()
 def auth(user: User, db: Session = Depends(get_db)):
     login_model = LoginModel(db)
     
-    # Memeriksa otentikasi pengguna
     authenticated_user = login_model.authenticate_user(user)
     
     if authenticated_user:
-        # Kembalikan informasi otentikasi (bisa berupa token, atau sesi)
         return {
             "message": "Login berhasil",
             "username": authenticated_user.username,
