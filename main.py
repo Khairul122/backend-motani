@@ -1,10 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from Api.Route import router as api_router
-from conn import db_config
 import mysql.connector
 from mysql.connector import Error
-from fastapi.exceptions import HTTPException
+from conn import DB_CONFIG
+from fastapi import HTTPException
+
 
 app = FastAPI()
 
@@ -24,10 +25,10 @@ def root():
 def cek_koneksi():
     try:
         connection = mysql.connector.connect(
-            host=db_config["host"],
-            user=db_config["user"],
-            password=db_config["password"],
-            database=db_config["database"]
+            host=DB_CONFIG["host"],
+            user=DB_CONFIG["user"],
+            password=DB_CONFIG["password"],
+            database=DB_CONFIG["database"]
         )
         if connection.is_connected():
             return {"message": "Koneksi ke database berhasil!"}
@@ -37,4 +38,4 @@ def cek_koneksi():
         if connection.is_connected():
             connection.close()
 
-app.include_router(api_router, prefix="/api")
+app.include_router(api_router)

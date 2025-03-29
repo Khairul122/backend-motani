@@ -1,105 +1,50 @@
-# Controller/LoginController.py
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from Model.LoginModel import User, LoginModel, RegistrasiKonsumen, RegistrasiLogistik
 from conn import get_db
-from datetime import datetime
+from Schema.LoginSchema import UserLogin
+from Model.LoginModel import User
+import globals
 
 router = APIRouter()
 
-@router.post("/login/konsumen")
-def login_konsumen(user: User, db: Session = Depends(get_db)):
-    login_model = LoginModel(db)
-    authenticated_user = login_model.authenticate_konsumen(user)
-    if authenticated_user:
-        return {
-            "status": True,
-            "message": "Login berhasil",
-            "payload": authenticated_user
-        }
-    else:
-        raise HTTPException(status_code=404, detail="Username atau password salah")
+def authenticate_user(db: Session, username: str, password: str):
+    user = db.query(User).filter(User.username == username).first()
+    if user and user.password == password:
+        return user
+    return None
 
-@router.post("/login/logistik")
-def login_logistik(user: User, db: Session = Depends(get_db)):
-    login_model = LoginModel(db)
-    authenticated_user = login_model.authenticate_logistik(user)
-    if authenticated_user:
-        return {
-            "status": True,
-            "message": "Login berhasil",
-            "payload": authenticated_user
-        }
-    else:
-        raise HTTPException(status_code=404, detail="Username atau password salah")
+@router.post("/login")
+def login(user: UserLogin, db: Session = Depends(get_db)):
+    user_data = authenticate_user(db, user.username, user.password)
+    if not user_data:
+        raise HTTPException(status_code=401, detail="Username atau password salah")
 
-@router.post("/registrasi/konsumen")
-def registrasi_konsumen(data: RegistrasiKonsumen, db: Session = Depends(get_db)):
-    login_model = LoginModel(db)
-    if db.query(KonsumenInDB).filter(KonsumenInDB.no_telp == data.no_telp).first():
-        raise HTTPException(status_code=400, detail="Nomor telepon sudah terdaftar")
-    params = {
-        'no_telp': data.no_telp,
-        'password': data.no_telp,  # Asumsikan password sama dengan nomor telepon untuk demo
-        'nama': data.nama,
-        'tgl_create': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        'alamat': data.alamat,
-        'tgl_lahir': data.tgl_lahir,
-        'jk': data.jk,
-        'email': data.email
-    }
-    new_konsumen = login_model.registrasi_konsumen(params)
+    globals.current_user = user_data
+
     return {
-        "status": True,
-        "message": "Registrasi berhasil",
-        "payload": new_konsumen
+        "message": "Login berhasil",
+        "id_users": user_data.id_users,
+        "name": user_data.name,
+        "email": user_data.email,
+        "username": user_data.username,
+        "level": user_data.level
     }
 
-@router.post("/registrasi/logistik")
-def registrasi_logistik(data: RegistrasiLogistik, db: Session = Depends(get_db)):
-    login_model = LoginModel(db)
-    if db.query(LogistikInDB).filter(LogistikInDB.no_hp == data.no_hp).first():
-        raise HTTPException(status_code=400, detail="Nomor HP sudah terdaftar")
-    params = {
-        'no_hp': data.no_hp,
-        'password': data.password,
-        'nama_toko': data.nama_toko,
-        'alamat': data.alamat,
-        'lat': data.lat,
-        'lng': data.lng,
-        'status': data.status
-    }
-    new_logistik = login_model.registrasi_logistik(params)
+@router.post("/logout")
+def logout():
+    globals.current_user = None
+    return {"message": "Logout berhasil"}
+
+@router.get("/me")
+def get_current_user():
+    if not globals.current_user:
+        raise HTTPException(status_code=401, detail="Belum login")
+
+    user = globals.current_user
     return {
-        "status": True,
-        "message": "Registrasi logistik berhasil",
-        "payload": new_logistik
+        "id_users": user.id_users,
+        "name": user.name,
+        "email": user.email,
+        "username": user.username,
+        "level": user.level
     }
-
-@router.post("/ubahpassword/konsumen")
-def ubah_password_konsumen(user: User, db: Session = Depends(get_db)):
-    login_model = LoginModel(db)
-    konsumen = db.query(KonsumenInDB).filter(KonsumenInDB.no_telp == user.username).first()
-    if konsumen:
-        konsumen.password = user.password
-        db.commit()
-        return {
-            "status": True,
-            "message": "Password berhasil diubah"
-        }
-    else:
-        raise HTTPException(status_code=404, detail="Konsumen tidak ditemukan")
-
-@router.post("/ubahpassword/logistik")
-def ubah_password_logistik(user: User, db: Session = Depends(get_db)):
-    login_model = LoginModel(db)
-    logistik = db.query(LogistikInDB).filter(LogistikInDB.no_hp == user.username).first()
-    if logistik:
-        logistik.password = user.password
-        db.commit()
-        return {
-            "status": True,
-            "message": "Password logistik berhasil diubah"
-        }
-    else:
-        raise HTTPException(status_code=404, detail="Logistik tidak ditemukan")
