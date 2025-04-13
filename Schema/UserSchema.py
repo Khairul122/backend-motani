@@ -4,10 +4,11 @@ from typing import Optional
 # Response schema
 class UserSchema(BaseModel):
     id_users: int
-    nama: str
+    name: str
     email: EmailStr
     username: str
     password: str
+    level: str
 
     model_config = {
         "from_attributes": True
@@ -15,10 +16,11 @@ class UserSchema(BaseModel):
 
 # Schema untuk create user (POST)
 class UserCreateSchema(BaseModel):
-    nama: str
+    name: str
     email: EmailStr
     username: str
     password: str
+    level: str
 
     model_config = {
         "from_attributes": True
@@ -30,6 +32,7 @@ class UserUpdateSchema(BaseModel):
     email: Optional[EmailStr] = None
     username: Optional[str] = None
     password: Optional[str] = None
+    level: Optional[str] = None
 
     model_config = {
         "from_attributes": True
