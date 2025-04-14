@@ -32,7 +32,6 @@ def get_all_informasi(db: Session = Depends(get_db)):
 
 @router.get("/informasi/{id_informasi}", response_model=InformasiSchema)
 def get_informasi_by_id(id_informasi: int, db: Session = Depends(get_db)):
-    # Gunakan join atau options untuk memuat relasi
     informasi = db.query(Informasi).options(
         joinedload(Informasi.kalender_panen),
         joinedload(Informasi.prediksi_permintaan)
@@ -216,7 +215,6 @@ def create_prediksi_permintaan(
     deskripsi: Optional[str] = Form(None),
     db: Session = Depends(get_db)
 ):
-    # Verifikasi informasi ada
     informasi = db.query(Informasi).filter(Informasi.id_informasi == id_informasi).first()
     if not informasi:
         raise HTTPException(status_code=404, detail="Informasi not found")
@@ -245,7 +243,6 @@ def update_prediksi_permintaan(
     if not prediksi:
         raise HTTPException(status_code=404, detail="Prediksi permintaan not found")
     
-    # Verifikasi informasi ada
     informasi = db.query(Informasi).filter(Informasi.id_informasi == id_informasi).first()
     if not informasi:
         raise HTTPException(status_code=404, detail="Informasi not found")

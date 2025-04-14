@@ -52,11 +52,9 @@ async def create_produk(
     additional_photos: Optional[List[UploadFile]] = File(None),
     db: Session = Depends(get_db)
 ):
-    # Validasi wajib
     if not foto or not foto.filename:
         raise HTTPException(status_code=422, detail="Foto utama produk harus diupload")
 
-    # Simpan data produk ke database
     produk = Produk(
         nama_produk=nama_produk,
         keterangan=keterangan,
@@ -71,7 +69,6 @@ async def create_produk(
     db.commit()
     db.refresh(produk)
 
-    # Simpan foto utama
     filename = f"{produk.id_produk}_{foto.filename}"
     file_path = os.path.join(UPLOAD_DIR, filename)
     with open(file_path, "wb") as buffer:
@@ -80,7 +77,6 @@ async def create_produk(
     foto_entry = ProdukFoto(id_produk=produk.id_produk, url_foto=filename)
     db.add(foto_entry)
 
-    # Simpan foto tambahan (jika ada)
     if additional_photos:
         for idx, add_photo in enumerate(additional_photos):
             if add_photo and add_photo.filename:
@@ -114,7 +110,6 @@ async def update_produk(
     if not produk:
         raise HTTPException(status_code=404, detail="Produk not found")
 
-    # Update data produk
     for attr, value in {
         "nama_produk": nama_produk,
         "keterangan": keterangan,
@@ -127,9 +122,7 @@ async def update_produk(
     }.items():
         setattr(produk, attr, value)
 
-    # Ganti foto utama (jika diupload ulang)
     if foto and foto.filename:
-        # Hapus foto utama lama
         foto_utama = db.query(ProdukFoto).filter(ProdukFoto.id_produk == id).first()
         if foto_utama:
             old_path = os.path.join(UPLOAD_DIR, foto_utama.url_foto)
@@ -137,7 +130,6 @@ async def update_produk(
                 os.remove(old_path)
             db.delete(foto_utama)
 
-        # Simpan foto baru
         filename = f"{id}_{foto.filename}"
         file_path = os.path.join(UPLOAD_DIR, filename)
         with open(file_path, "wb") as buffer:
@@ -146,7 +138,6 @@ async def update_produk(
         foto_entry = ProdukFoto(id_produk=id, url_foto=filename)
         db.add(foto_entry)
 
-    # Simpan foto tambahan baru (jika ada)
     if additional_photos:
         for idx, add_photo in enumerate(additional_photos):
             if add_photo and add_photo.filename:

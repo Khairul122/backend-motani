@@ -8,7 +8,6 @@ from Schema.UserSchema import UserSchema
 
 router = APIRouter()
 
-# Dependency
 def get_db():
     db = SessionLocal()
     try:
